@@ -15,8 +15,8 @@ test('SqliteDatabaseManager', async () => {
   await assert.rejects(db.savePlatform(platform)) // url + clientId unique
   assert.equal((await db.getPlatforms({ clientId: ['a', 'b'] })).length, 2)
   assert.equal((await db.getPlatforms({ url: 'https://moodle', clientId: [] })).length, 0)
-  await db.updatePlatformById(id, { active: false })
-  assert.deepEqual(await db.getPlatformByUrlAndClientId('https://moodle', 'a'), { ...platform, active: false, id })
+  await Promise.all([db.updatePlatformById(id, { active: false }), db.updatePlatformById(id, { name: 'N' })])
+  assert.deepEqual(await db.getPlatformByUrlAndClientId('https://moodle', 'a'), { ...platform, active: false, name: 'N', id })
   await db.deletePlatformById(id)
   assert.equal(await db.getPlatformById(id), undefined)
 

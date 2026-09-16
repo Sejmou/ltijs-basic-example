@@ -33,7 +33,8 @@ export class SqliteDatabaseManager implements DatabaseManager {
 
   async listen() {
     if (this.#path !== ':memory:') mkdirSync(dirname(this.#path), { recursive: true })
-    this.#db = new DatabaseSync(this.#path)
+    // Wait for another process's write lock (e.g. the register-platform CLI) instead of failing with SQLITE_BUSY.
+    this.#db = new DatabaseSync(this.#path, { timeout: 5000 })
     this.#db.exec(`
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS platforms (id TEXT PRIMARY KEY, data TEXT NOT NULL);
@@ -88,12 +89,8 @@ export class SqliteDatabaseManager implements DatabaseManager {
   }
 
   async updatePlatformById(id: string, fields: Partial<PlatformAttributes>) {
-    const existing = await this.getPlatformById(id)
-    if (existing === undefined) return
-    const { id: _id, ...attributes } = existing
-    this.db
-      .prepare('UPDATE platforms SET data = ? WHERE id = ?')
-      .run(JSON.stringify({ ...attributes, ...fields }), id)
+    // Single statement, so concurrent updates can't overwrite each other (a read + await + write could).
+    this.db.prepare('UPDATE platforms SET data = json_patch(data, ?) WHERE id = ?').run(JSON.stringify(fields), id)
   }
 
   async deletePlatformById(id: string) {
