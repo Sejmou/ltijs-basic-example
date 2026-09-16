@@ -4,13 +4,20 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "node src/app.ts",
+    "start": "node src/app.ts",
+    "dev": "node --watch src/app.ts",
+    "typecheck": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24",
+      "onFail": "download"
+    },
     "packageManager": {
       "name": "pnpm",
       "version": "^11.10.0",
@@ -22,7 +29,8 @@
   },
   "type": "module",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "ltijs": "^7.0.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

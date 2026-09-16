@@ -1,9 +1,11 @@
-import express, { type Express, type Request, type Response } from 'express';
+import { Provider } from 'ltijs'
 
-const app: Express = express();
+const provider = new Provider({
+  database: { url: 'mongodb://mongodb/ltijs' },
+})
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
-});
+provider.onResourceLink(async (context, request, response) => {
+  response.html(`Hello, ${context.idToken.user.name ?? 'learner'}!`)
+})
 
-app.listen(3001);
+await provider.listen()

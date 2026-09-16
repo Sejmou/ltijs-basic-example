@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    working_dir: /app
+    command: pnpm dev
+    ports:
+      - "3001:3000"
+    depends_on:
+      - mongodb
+    volumes:
+      # live source for `node --watch`; rebuild the image after dependency changes
+      - ./src:/app/src
+  mongodb:
+    image: docker.io/library/mongo:7.0.43 # NOTE: versions >= 8.0 don't work on certain Linux kernel versions (including the one I tested things on): https://jira.mongodb.org/browse/SERVER-121912
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: app
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+  node_modules:
+  pnpm_store:
