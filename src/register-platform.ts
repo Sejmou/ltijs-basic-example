@@ -1,10 +1,11 @@
 // Registers a Moodle (e.g. TUWEL) instance as an LTI 1.3 platform in the ltijs database.
 //
 // Usage:
-//   pnpm register-platform --url https://tuwel.tuwien.ac.at --client-id abc123 [--name TUWEL] [--db mongodb://localhost/ltijs]
+//   pnpm register-platform --url https://tuwel.tuwien.ac.at --client-id abc123 [--name TUWEL] [--db data/ltijs.db]
 
 import { parseArgs } from 'node:util'
 import { IdTokenValidationMethod, Provider } from 'ltijs'
+import { SqliteDatabaseManager } from './sqlite-database-manager.ts'
 
 const USAGE = `Usage: pnpm register-platform --url <moodle-url> --client-id <client-id> [options]
 
@@ -12,7 +13,7 @@ Options:
   --url <url>          Base URL of the Moodle instance (e.g. https://tuwel.tuwien.ac.at)
   --client-id <id>     Client ID shown in Moodle's LTI tool configuration
   --name <name>        Display name for the platform (default: TUWEL)
-  --db <url>           MongoDB connection URL (default: $DATABASE_URL or mongodb://localhost/ltijs)
+  --db <path>          SQLite database file (default: $DATABASE_PATH or data/ltijs.db)
   -h, --help           Show this help`
 
 const { values } = parseArgs({
@@ -20,7 +21,7 @@ const { values } = parseArgs({
     url: { type: 'string' },
     'client-id': { type: 'string' },
     name: { type: 'string', default: 'TUWEL' },
-    db: { type: 'string', default: process.env.DATABASE_URL ?? 'mongodb://localhost/ltijs' },
+    db: { type: 'string', default: process.env.DATABASE_PATH ?? 'data/ltijs.db' },
     help: { type: 'boolean', short: 'h' },
   },
 })
@@ -39,7 +40,7 @@ const url = values.url.replace(/\/+$/, '')
 const clientId = values['client-id']
 
 const provider = new Provider({
-  database: { url: values.db },
+  databaseManager: new SqliteDatabaseManager(values.db),
 })
 
 // Only the database is needed here, so connect it directly instead of calling provider.listen(),

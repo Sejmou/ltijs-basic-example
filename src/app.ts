@@ -1,7 +1,8 @@
 import { Provider } from 'ltijs'
+import { SqliteDatabaseManager } from './sqlite-database-manager.ts'
 
 const provider = new Provider({
-  database: { url: 'mongodb://mongodb/ltijs' },
+  databaseManager: new SqliteDatabaseManager(process.env.DATABASE_PATH ?? 'data/ltijs.db'),
 })
 
 provider.onResourceLink(async (context, request, response) => {
